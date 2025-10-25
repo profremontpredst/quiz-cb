@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Проверка на банкротство</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    background:#f6f8fb;color:#111;line-height:1.5;
+  }
+  .quiz-wrapper *{all:unset;display:revert;box-sizing:border-box}
+
+  .quiz-wrapper{
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:12px;background:#f2f5fa;
+  }
+  .quiz{
+    width:min(720px,96vw);
+    background:#fff;border-radius:10px;
+    box-shadow:0 8px 22px rgba(0,0,0,.05);
+    overflow:hidden;
+  }
+
+  .quiz__header{
+    background:#fff;
+    color:#0c2f66;
+    border-bottom:2px solid #0066FF;
+    padding:10px 14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .quiz__title{
+    font-weight:700;font-size:16px;color:#0c2f66;
+  }
+  .quiz__progress{margin-left:auto;display:flex;align-items:center;}
+  .bar{width:120px;height:4px;border-radius:999px;background:rgba(0,102,255,.15);overflow:hidden;}
+  .bar>span{display:block;height:100%;width:0%;background:#0066FF;transition:width .25s ease;}
+
+  .quiz__body{padding:14px}
+  .step{display:none;animation:fade .25s ease}
+  .step.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .q{font-size:18px;font-weight:700;color:#0c2f66;margin-bottom:10px}
+
+  .options{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}
+  .btn-opt{
+    border:1px solid #DCE3EB;border-radius:8px;padding:10px;
+    background:transparent;color:#0c2f66;cursor:pointer;text-align:center;
+    font-weight:600;font-size:14px;
+    transition:border-color .2s,background .2s,color .2s;
+  }
+  .btn-opt:hover{border-color:#AFC3DA;background:#f8fbff}
+  .btn-opt.active{border-color:#0066FF;color:#0066FF;background:#EFF5FF}
+
+  .lead{display:grid;gap:10px}
+  .field{display:grid;gap:6px}
+  .field label{font-size:13px;font-weight:600;color:#0c2f66}
+  .input{padding:10px;border:1px solid #DCE3EB;border-radius:8px;font-size:14px;background:#fff;}
+  .input:focus{outline:1px solid #0066FF;border-color:#BBD0EE}
+  .result{display:none;border:1px dashed #DCE3EB;border-radius:8px;padding:10px;background:#f8fafc;font-size:13px;margin-top:8px;}
+
+  .muted{margin-top:8px;font-size:12px;color:#7c8a9a;text-align:center}
+  .muted a{color:#0066FF;text-decoration:none}
+  .muted a:hover{text-decoration:underline}
+
+  .footer{border-top:1px solid #E9EEF4;background:#FAFBFD;padding:8px 12px;
+    display:flex;justify-content:center;align-items:center;font-size:12px;color:#7c8a9a;}
+
+  /* ——— Блок "спасибо" ——— */
+  .thanks-box{
+    display:none;text-align:center;padding:40px 20px;
+  }
+  .thanks-box.active{display:block;animation:fade .4s ease;}
+  .thanks-box img{
+    width:90px;height:90px;border-radius:50%;
+    margin-bottom:18px;object-fit:cover;
+  }
+  .thanks-box p{font-size:17px;color:#0c2f66;font-weight:600;}
+
+  @media(max-width:680px){.quiz__body{padding:12px}.options{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="quiz-wrapper">
+  <div class="quiz" id="quiz">
+    <div class="quiz__header">
+      <div class="quiz__title">Проверка на банкротство</div>
+      <div class="quiz__progress"><div class="bar"><span id="pBar"></span></div></div>
+    </div>
+
+    <div class="quiz__body" id="quizBody">
+      <!-- Шаги -->
+      <div class="step active" data-step="1">
+        <div class="q">1. Какая у вас сумма долга?</div>
+        <div class="options">
+          <button class="btn-opt" data-name="debt" data-value="до 300 тыс.">До 300 тыс.</button>
+          <button class="btn-opt" data-name="debt" data-value="300–500 тыс.">300–500 тыс.</button>
+          <button class="btn-opt" data-name="debt" data-value="более 500 тыс.">Более 500 тыс.</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="2">
+        <div class="q">2. Есть ли просрочки?</div>
+        <div class="options">
+          <button class="btn-opt" data-name="delay" data-value="нет">Нет</button>
+          <button class="btn-opt" data-name="delay" data-value="менее 3 мес.">Менее 3 мес.</button>
+          <button class="btn-opt" data-name="delay" data-value="более 3 мес.">Более 3 мес.</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="3">
+        <div class="q">3. Работаете официально?</div>
+        <div class="options">
+          <button class="btn-opt" data-name="job" data-value="да">Да</button>
+          <button class="btn-opt" data-name="job" data-value="нет">Нет</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="4">
+        <div class="q">4. Есть ли имущество кроме жилья?</div>
+        <div class="options">
+          <button class="btn-opt" data-name="property" data-value="нет">Нет</button>
+          <button class="btn-opt" data-name="property" data-value="есть, хочу сохранить">Есть, хочу сохранить</button>
+          <button class="btn-opt" data-name="property" data-value="готов продать">Готов продать</button>
+        </div>
+      </div>
+
+      <div class="step" data-step="5">
+        <div class="q">5. Контакт для результата</div>
+        <div class="lead">
+          <div class="field"><label>Ваше имя</label><input id="quizName" class="input" placeholder="Иван"></div>
+          <div class="field"><label>Телефон</label><input id="quizPhone" class="input" placeholder="+7 900 000-00-00"></div>
+          <input type="text" id="quizHoneypot" style="display:none !important;">
+        </div>
+        <div class="result" id="summaryBox"></div>
+        <div class="muted" id="autoHint" style="display:none;">Отправляем…</div>
+      </div>
+
+      <!-- Встроенный экран "спасибо" -->
+      <div class="thanks-box" id="thanksBox">
+        <img src="https://i.imgur.com/vTvjNeq.png" alt="Елена">
+        <p>Скоро свяжусь с вами</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="https://pravo31.ru/privacy/" target="_blank" style="color:inherit;text-decoration:none;">Политика конфиденциальности</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/imask"></script>
+<script>
+const QUIZ_URL="https://openai-gpt-proxy-mcnj.onrender.com/quiz";
+const LEAD_URL="https://openai-gpt-proxy-mcnj.onrender.com/lead";
+let step=1,total=5,answers={},events=[],last=Date.now(),submitting=false;
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const steps=$$(".step"),pBar=$("#pBar"),autoHint=$("#autoHint"),thanks=$("#thanksBox"),quizBody=$("#quizBody");
+
+function showStep(n){steps.forEach(s=>s.classList.remove("active"));steps[n-1].classList.add("active");pBar.style.width=((n-1)/(total-1))*100+"%";step=n;}
+function pushEvent(type,label){const now=Date.now();events.push({type,label,intervalMs:now-last,timestamp:now});last=now;}
+
+$$(".btn-opt").forEach(btn=>btn.addEventListener("click",()=>{const name=btn.dataset.name,val=btn.dataset.value;
+btn.parentElement.querySelectorAll(".btn-opt").forEach(b=>b.classList.remove("active"));
+btn.classList.add("active");answers[name]=val;pushEvent("click",name+":"+val);if(step<total){showStep(++step);}}));
+
+const phone=document.getElementById("quizPhone"),mask=IMask(phone,{mask:'+{7} (000) 000-00-00'});
+const nameI=document.getElementById("quizName"),honeypot=document.getElementById("quizHoneypot");
+nameI.addEventListener('input',tryAutoSubmit);phone.addEventListener('input',tryAutoSubmit);
+
+async function tryAutoSubmit(){
+  if(step!==5||submitting)return;
+  const name=nameI.value.trim();let ph=phone.value.replace(/[^0-9+]/g,'');
+  if(honeypot.value)return;if(!name||ph.length<10)return;
+  if(!ph.startsWith("+7"))ph="+7"+ph.replace(/^8/,"").slice(-10);
+  submitting=true;autoHint.style.display="block";
+  const userId=localStorage.getItem("userId")||("user_"+Math.random().toString(36).slice(2,10));
+  localStorage.setItem("userId",userId);
+  const payload={userId,answers,events,phone:ph,honeypot:honeypot.value,durationMs:Date.now()-(events[0]?.timestamp||Date.now())};
+  try{
+    const r=await fetch(QUIZ_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const d=await r.json();
+    const verdict=d.action==="allow"?"✅ Подходит, юрист свяжется":d.action==="challenge"?"⚠️ Нужна проверка":"⛔️ Похоже, это бот";
+    const summary=$("#summaryBox");summary.style.display="block";summary.textContent=verdict;
+    if(d.action!=="deny"){const answersSummary=Object.entries(answers).map(([q,a])=>`${q}: ${a}`).join("; ");
+      await fetch(LEAD_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name,phone:ph,userId,source:"quiz",no_summary:true,answersSummary,messages:[]})});}
+    autoHint.textContent="Готово ✔";
+    setTimeout(()=>{quizBody.innerHTML="";thanks.classList.add("active");},800);
+  }catch(e){autoHint.textContent="Ошибка соединения";}
+}
+showStep(1);
+</script>
+</body>
+</html>
