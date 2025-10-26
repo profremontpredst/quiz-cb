@@ -189,7 +189,10 @@ async function tryAutoSubmit(){
       await fetch(LEAD_URL,{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({name,phone:ph,userId,source:"quiz",no_summary:true,answersSummary,messages:[]})});}
     autoHint.textContent="Готово ✔";
-    setTimeout(()=>{quizBody.innerHTML="";thanks.classList.add("active");},800);
+    setTimeout(()=>{
+  document.querySelectorAll(".step").forEach(s=>s.remove());
+  thanks.classList.add("active");
+},800);
   }catch(e){autoHint.textContent="Ошибка соединения";}
 }
 showStep(1);
