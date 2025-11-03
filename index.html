@@ -210,8 +210,9 @@ async function tryAutoSubmit(){
     const verdict=d.action==="allow"?"✅ Подходит, юрист свяжется":d.action==="challenge"?"⚠️ Нужна проверка":"⛔️ Похоже, это бот";
     const summary=$("#summaryBox");summary.style.display="block";summary.textContent=verdict;
     if(d.action!=="deny"){const answersSummary=Object.entries(answers).map(([q,a])=>`${q}: ${a}`).join("; ");
-      await fetch(LEAD_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({name,phone:ph,userId,source:"quiz",no_summary:true,answersSummary,messages:[]})});}
+  await fetch(LEAD_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({name,phone:ph,userId,source:"quiz",no_summary:true,answersSummary,messages:[]})});
+  if(typeof ym!=='undefined'){ym(96579651,'reachGoal','lead_submit');}}
     autoHint.textContent="Готово ✔";
     setTimeout(()=>{
   document.querySelectorAll(".step").forEach(s=>s.remove());
