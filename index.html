@@ -203,7 +203,7 @@ async function tryAutoSubmit(){
   submitting=true;autoHint.style.display="block";
   const userId=localStorage.getItem("userId")||("user_"+Math.random().toString(36).slice(2,10));
   localStorage.setItem("userId",userId);
-  const payload={userId,answers,events,phone:ph,honeypot:honeypot.value,durationMs:Date.now()-(events[0]?.timestamp||Date.now())};
+  const payload={userId,answers,events,phone:ph,honeypot:honeypot.value,durationMs:Date.now()-(events[0]?.timestamp||Date.now()),frontend:"quiz-cb"};
   try{
     const r=await fetch(QUIZ_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     const d=await r.json();
