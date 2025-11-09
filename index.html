@@ -13,10 +13,10 @@
   .quiz-wrapper *{all:unset;display:revert;box-sizing:border-box}
 
   .quiz-wrapper{
-    min-height:100vh;
-    display:flex;align-items:center;justify-content:center;
-    padding:12px;background:#f2f5fa;
-  }
+  background:#fff;
+  margin:0;
+  padding:0;
+}
   .quiz{
     width:min(720px,96vw);
     background:#fff;border-radius:10px;
@@ -81,30 +81,6 @@
   .thanks-box p{font-size:17px;color:#0c2f66;font-weight:600;}
 
   @media(max-width:680px){.quiz__body{padding:12px}.options{grid-template-columns:1fr}}
- body, html {
-  margin: 0;
-  padding: 0;
-}
-
-.quiz-wrapper {
-  min-height: auto;
-  padding: 0;
-  background: transparent;
-}
- html, body {
-  height: auto !important;
-}
-
-.quiz-wrapper {
-  min-height: 0 !important;
-  height: auto !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-.quiz {
-  margin-bottom: 0 !important;
-}
 </style>
 </head>
 <body>
