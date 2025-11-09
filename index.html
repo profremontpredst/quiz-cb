@@ -9,19 +9,18 @@
   body{
     font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
     background:#f6f8fb;color:#111;line-height:1.5;
+    margin: 0;
+    padding: 0;
+    height: auto;
   }
-  .quiz-wrapper *{all:unset;display:revert;box-sizing:border-box}
 
   .quiz-wrapper{
-    min-height:100vh;
-    display:flex;align-items:center;justify-content:center;
-    padding:12px;background:#f2f5fa;
-  }
-  .quiz{
-    width:min(720px,96vw);
-    background:#fff;border-radius:10px;
+    background:#fff;
+    border-radius:10px;
     box-shadow:0 8px 22px rgba(0,0,0,.05);
     overflow:hidden;
+    margin: 0;
+    height: auto;
   }
 
   .quiz__header{
@@ -38,7 +37,7 @@
   .bar{width:120px;height:4px;border-radius:999px;background:rgba(0,102,255,.15);overflow:hidden;}
   .bar>span{display:block;height:100%;width:0%;background:#0066FF;transition:width .25s ease;}
 
-  .quiz__body{padding:14px}
+  .quiz__body{padding:14px; margin: 0;}
   .step{display:none;animation:fade .25s ease}
   .step.active{display:block}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -71,40 +70,20 @@
 
   /* ——— Блок "спасибо" ——— */
   .thanks-box{
-    display:none;text-align:center;padding:40px 20px;
+    display:none;text-align:center;padding:20px;
   }
   .thanks-box.active{display:block;animation:fade .4s ease;}
   .thanks-box img{
-    width:90px;height:90px;border-radius:50%;
-    margin-bottom:18px;object-fit:cover;
+    width:70px;height:70px;border-radius:50%;
+    margin-bottom:12px;object-fit:cover;
   }
-  .thanks-box p{font-size:17px;color:#0c2f66;font-weight:600;}
+  .thanks-box p{font-size:16px;color:#0c2f66;font-weight:600;}
 
-  @media(max-width:680px){.quiz__body{padding:12px}.options{grid-template-columns:1fr}}
- body, html {
-  margin: 0;
-  padding: 0;
-}
-
-.quiz-wrapper {
-  min-height: auto;
-  padding: 0;
-  background: transparent;
-}
- html, body {
-  height: auto !important;
-}
-
-.quiz-wrapper {
-  min-height: 0 !important;
-  height: auto !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-.quiz {
-  margin-bottom: 0 !important;
-}
+  @media(max-width:680px){
+    .quiz__body{padding:12px}
+    .options{grid-template-columns:1fr}
+    .quiz-wrapper{margin:0;border-radius:0}
+  }
 </style>
 </head>
 <body>
