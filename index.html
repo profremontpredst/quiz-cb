@@ -80,6 +80,36 @@
   }
   .thanks-box p{font-size:17px;color:#0c2f66;font-weight:600;}
 
+  /* Стили для экрана получения заявки */
+  .receiving-box {
+    text-align: center;
+    padding: 40px 20px;
+    animation: fade .4s ease;
+  }
+  .pulse-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin-bottom: 18px;
+    object-fit: cover;
+    animation: pulse 2s infinite;
+  }
+  .receiving-text {
+    font-size: 17px;
+    color: #0c2f66;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .receiving-subtext {
+    font-size: 14px;
+    color: #7c8a9a;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
   @media(max-width:680px){.quiz__body{padding:12px}.options{grid-template-columns:1fr}}
  body, html {
   margin: 0;
@@ -162,12 +192,6 @@
         <div class="result" id="summaryBox"></div>
         <div class="muted" id="autoHint" style="display:none;">Отправляем…</div>
       </div>
-
-      <!-- Встроенный экран "спасибо" -->
-      <div class="thanks-box" id="thanksBox">
-        <img src="https://i.imgur.com/vTvjNeq.png" alt="Елена">
-        <p>Скоро свяжусь с вами</p>
-      </div>
     </div>
 
     <div class="footer">
@@ -182,7 +206,7 @@ const QUIZ_URL="https://openai-gpt-proxy-d2py.onrender.com/quiz";
 const LEAD_URL="https://openai-gpt-proxy-d2py.onrender.com/lead";
 let step=1,total=5,answers={},events=[],last=Date.now(),submitting=false;
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
-const steps=$$(".step"),pBar=$("#pBar"),autoHint=$("#autoHint"),thanks=$("#thanksBox"),quizBody=$("#quizBody");
+const steps=$$(".step"),pBar=$("#pBar"),quizBody=$("#quizBody");
 
 function showStep(n){steps.forEach(s=>s.classList.remove("active"));steps[n-1].classList.add("active");pBar.style.width=((n-1)/(total-1))*100+"%";step=n;}
 function pushEvent(type,label){const now=Date.now();events.push({type,label,intervalMs:now-last,timestamp:now});last=now;}
@@ -200,25 +224,63 @@ async function tryAutoSubmit(){
   const name=nameI.value.trim();let ph=phone.value.replace(/[^0-9+]/g,'');
   if(honeypot.value)return;if(!name||ph.length<10)return;
   if(!ph.startsWith("+7"))ph="+7"+ph.replace(/^8/,"").slice(-10);
-  submitting=true;autoHint.style.display="block";
+  submitting=true;
+  
+  // МГНОВЕННО показываем экран получения заявки
+  const quizBody = document.getElementById('quizBody');
+  quizBody.innerHTML = `
+    <div class="receiving-box">
+      <img src="https://i.imgur.com/vTvjNeq.png" alt="Елена" class="pulse-img">
+      <div class="receiving-text">Получила вашу заявку</div>
+      <div class="receiving-subtext">Скоро свяжусь с вами</div>
+    </div>
+  `;
+
   const userId=localStorage.getItem("userId")||("user_"+Math.random().toString(36).slice(2,10));
   localStorage.setItem("userId",userId);
   const payload={userId,answers,events,phone:ph,honeypot:honeypot.value,durationMs:Date.now()-(events[0]?.timestamp||Date.now()),frontend:"quiz-cb"};
+  
   try{
     const r=await fetch(QUIZ_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     const d=await r.json();
-    const verdict=d.action==="allow"?"✅ Подходит, юрист свяжется":d.action==="challenge"?"⚠️ Нужна проверка":"⛔️ Похоже, это бот";
-    const summary=$("#summaryBox");summary.style.display="block";summary.textContent=verdict;
-    if(d.action!=="deny"){const answersSummary=Object.entries(answers).map(([q,a])=>`${q}: ${a}`).join("; ");
-  await fetch(LEAD_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({name,phone:ph,userId,source:"quiz",no_summary:true,answersSummary,messages:[]})});
-  if(typeof ym!=='undefined'){ym(96579651,'reachGoal','lead_submit');}}
-    autoHint.textContent="Готово ✔";
+
+    // Если бот - логируем но не показываем пользователю
+    if(d.action==="deny"){
+      console.log("Bot detected:", d.reason);
+    } else {
+      // Отправляем лид если не бот
+      const answersSummary=Object.entries(answers).map(([q,a])=>`${q}: ${a}`).join("; ");
+      await fetch(LEAD_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({name,phone:ph,userId,source:"quiz",no_summary:true,answersSummary,messages:[]})});
+      
+      // Метрика только для не-ботов - ТА ЖЕ САМАЯ ЦЕЛЬ КАК В ФОРМЕ!
+      if(d.action !== "deny" && typeof ym!=='undefined'){
+        ym(96579651,'reachGoal','lead_submit');
+      }
+    }
+
+    // Через 2 секунды показываем финальное спасибо
     setTimeout(()=>{
-  document.querySelectorAll(".step").forEach(s=>s.remove());
-  thanks.classList.add("active");
-},800);
-  }catch(e){autoHint.textContent="Ошибка соединения";}
+      quizBody.innerHTML = `
+        <div class="receiving-box">
+          <img src="https://i.imgur.com/vTvjNeq.png" alt="Елена" style="width:90px;height:90px;border-radius:50%;margin-bottom:18px;object-fit:cover;">
+          <div class="receiving-text">Скоро свяжусь с вами</div>
+        </div>
+      `;
+    },2000);
+
+  }catch(e){
+    // В случае ошибки всё равно показываем спасибо
+    console.error("Submission error:", e);
+    setTimeout(()=>{
+      quizBody.innerHTML = `
+        <div class="receiving-box">
+          <img src="https://i.imgur.com/vTvjNeq.png" alt="Елена" style="width:90px;height:90px;border-radius:50%;margin-bottom:18px;object-fit:cover;">
+          <div class="receiving-text">Скоро свяжусь с вами</div>
+        </div>
+      `;
+    },2000);
+  }
 }
 showStep(1);
 </script>
